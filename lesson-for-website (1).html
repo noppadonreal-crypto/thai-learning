@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>บทเรียนออนไลน์ | วิทยาศาสตร์พื้นฐานอาชีพ ปวช.3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- ฐานข้อมูลกลาง (Firebase Realtime Database) — ดูวิธีตั้งค่าที่คอมเมนต์ firebaseConfig ในสคริปต์ท้ายไฟล์ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+:root{
+  --ink:#16233F;
+  --ink-soft:#3F4E70;
+  --paper:#EEF1EA;
+  --card:#FFFFFF;
+  --line:rgba(22,35,63,.14);
+  --grid:rgba(22,35,63,.055);
+  --amber:#DB8A25;
+  --amber-deep:#B36A16;
+  --teal:#1F7A6C;
+  --teal-deep:#155A50;
+  --red:#B8402C;
+  --red-soft:#F4E1DC;
+  font-size:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:"IBM Plex Sans Thai","Tahoma",sans-serif;
+  color:var(--ink);
+  min-height:100vh;
+  background:
+    repeating-linear-gradient(0deg,var(--grid) 0 1px,transparent 1px 32px),
+    repeating-linear-gradient(90deg,var(--grid) 0 1px,transparent 1px 32px),
+    var(--paper);
+}
+.mono{font-family:"IBM Plex Mono",monospace}
+.hidden{display:none!important}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;font-family:inherit}
+a{color:inherit}
+
+/* ---------- LOGIN ---------- */
+#loginPage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{
+  width:min(460px,100%);padding:0;position:relative;overflow:hidden;
+  background:var(--card);border:1px solid var(--line);border-radius:6px;
+  box-shadow:0 18px 40px rgba(22,35,63,.14)
+}
+.login-accent{height:8px;background:linear-gradient(90deg,var(--amber),var(--teal))}
+.login-body{padding:38px 34px 34px}
+.login-tag{font-size:12px;letter-spacing:.02em;color:var(--ink-soft);margin-bottom:10px}
+.login-card h1{font-size:26px;font-weight:700;color:var(--ink);margin:0 0 6px}
+.login-card h2{font-size:15px;font-weight:400;color:var(--ink-soft);line-height:1.65;margin-bottom:18px}
+.badge{display:inline-block;padding:5px 12px;border-radius:4px;background:var(--ink);color:#fff;font-weight:600;font-size:13px}
+.login-desc{color:var(--ink-soft);margin:16px 0 14px;line-height:1.7;font-size:14px;border-top:1px dashed var(--line);padding-top:14px}
+.field-label{font-size:12px;color:var(--ink-soft);margin-bottom:6px;display:block}
+.input{
+  width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:5px;
+  background:#fafaf7;outline:none;margin-bottom:16px;font-size:15px
+}
+.input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(219,138,37,.15)}
+
+.btn{
+  border:0;border-radius:5px;padding:12px 20px;font-weight:600;font-size:14.5px;
+  transition:.15s;border:1px solid transparent
+}
+.primary{background:var(--ink);color:#fff}
+.primary:hover{background:#0d1730}
+.green{background:var(--teal);color:#fff}
+.green:hover{background:var(--teal-deep)}
+.red{background:transparent;color:var(--red);border-color:var(--red)}
+.red:hover{background:var(--red-soft)}
+.gray{background:transparent;color:var(--ink-soft);border-color:var(--line)}
+.amber-btn{background:var(--amber);color:#fff}
+.amber-btn:hover{background:var(--amber-deep)}
+
+/* ---------- SHELL ---------- */
+#mainPage{display:none}
+header{
+  position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;
+  padding:16px 4% 0;
+}
+.header-inner{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:18px;padding-bottom:14px}
+.brand{display:flex;align-items:center;gap:13px}
+.brand-icon{
+  width:40px;height:40px;border-radius:5px;background:var(--amber);
+  display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0
+}
+.brand-title{font-weight:600;font-size:15.5px;line-height:1.3}
+.brand-sub{font-size:12.5px;color:#B9C2D8;font-family:"IBM Plex Mono",monospace}
+.user-area{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.user-pill{padding:7px 13px;border-radius:5px;background:rgba(255,255,255,.08);font-size:13.5px;border:1px solid rgba(255,255,255,.14)}
+
+nav{max-width:1180px;margin:0 auto;display:flex;gap:2px;overflow-x:auto}
+.nav-btn{
+  border:0;background:transparent;color:#C6CEE0;padding:11px 16px;font-weight:600;font-size:13.5px;
+  white-space:nowrap;border-bottom:3px solid transparent;transition:.15s
+}
+.nav-btn:hover{color:#fff}
+.nav-btn.active{color:#fff;border-bottom-color:var(--amber)}
+.nav-btn.locked{opacity:.4;cursor:not-allowed}
+.nav-btn.locked:hover{color:#C6CEE0}
+
+.container{max-width:1120px;margin:34px auto;padding:0 20px}
+.section{display:none}
+.section.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+.hero{padding:6px 0 26px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.hero-eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--amber-deep);margin-bottom:8px}
+.hero h1{font-size:28px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.hero p{color:var(--ink-soft);font-size:15px}
+
+/* ---------- CARDS ---------- */
+.card{
+  position:relative;padding:24px 26px;margin-bottom:18px;border-radius:6px;
+  background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ink);
+}
+.card.orange{border-left-color:var(--amber)}
+.card.blue{border-left-color:#2E5C99}
+.card.green-card{border-left-color:var(--teal)}
+.card.purple{border-left-color:#6B4C8A}
+.card-title{display:flex;align-items:center;gap:11px;font-size:18px;font-weight:700;margin-bottom:12px;color:var(--ink)}
+.card-title span{font-size:20px}
+.card p{line-height:1.85;margin-bottom:9px;color:#2A3550;font-size:14.5px}
+.card ul,.card ol{padding-left:22px;line-height:1.95;color:#2A3550;font-size:14.5px}
+.card ul{margin-top:4px}
+.unit-tag{
+  display:inline-flex;align-items:center;gap:8px;font-family:"IBM Plex Mono",monospace;
+  font-size:12px;color:#fff;background:var(--ink);padding:3px 9px;border-radius:4px;margin-bottom:10px
+}
+.kw-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.kw{font-size:12.5px;background:#F3F0E4;border:1px solid var(--line);color:var(--ink-soft);padding:4px 10px;border-radius:4px}
+.spec-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+.spec-table th,.spec-table td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+.spec-table th{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--ink-soft);font-size:12px}
+.spec-table td.mono{font-family:"IBM Plex Mono",monospace}
+
+/* index / home */
+.index-list{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:18px}
+.index-row{display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+.index-row:last-child{border-bottom:0}
+.index-num{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:#fff;background:var(--ink-soft);padding:3px 8px;border-radius:4px;min-width:44px;text-align:center;flex-shrink:0}
+.index-name{font-size:14.5px;color:var(--ink)}
+.path-strip{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-soft)}
+.path-strip b{color:var(--ink)}
+
+/* ---------- TABS ---------- */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;border-bottom:1px solid var(--line)}
+.tab-btn{border:0;background:transparent;padding:10px 4px;margin-right:18px;font-weight:600;font-size:14px;color:var(--ink-soft);border-bottom:2px solid transparent}
+.tab-btn.active{color:var(--ink);border-bottom-color:var(--amber)}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fade .2s}
+
+/* ---------- QUIZ ---------- */
+.quiz-wrap{max-width:760px;margin:auto}
+.quiz-top{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.progress{height:6px;flex:1;background:var(--line);border-radius:3px;overflow:hidden}
+.progress-bar{height:100%;background:var(--amber);transition:.25s}
+.timer{
+  min-width:64px;text-align:center;padding:7px 4px;border-radius:5px;background:var(--ink);
+  color:var(--amber);font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:14px
+}
+.q-tag{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--amber-deep);margin-bottom:10px}
+.question{font-size:18px;font-weight:700;line-height:1.6;margin-bottom:18px;color:var(--ink)}
+.options{display:grid;gap:9px}
+.option{
+  display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid var(--line);border-radius:5px;
+  background:#fbfbf9;transition:.12s
+}
+.option:hover{border-color:var(--amber)}
+.option.selected{border-color:var(--amber);background:#FBF1E1}
+.opt-letter{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+  border:1px solid var(--line);border-radius:4px;width:24px;height:24px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center
+}
+.option.selected .opt-letter{border-color:var(--amber);color:var(--amber-deep)}
+.opt-text{font-size:14.5px;color:#2A3550}
+.quiz-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;color:var(--ink-soft);font-size:13.5px}
+
+.result{text-align:center;border-left-color:var(--amber)}
+.score-circle{
+  width:132px;height:132px;margin:18px auto;border-radius:50%;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;background:var(--ink);color:#fff;border:4px solid var(--amber)
+}
+.score-circle strong{font-family:"IBM Plex Mono",monospace;font-size:32px}
+.score-circle span{font-size:11.5px;color:#B9C2D8}
+.result p{color:var(--ink-soft);font-size:14px}
+
+/* ---------- GAME (จับคู่โยงเส้น) ---------- */
+.game-panel{max-width:640px;margin:22px auto;padding:26px;border-radius:6px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--teal)}
+.game-stats{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.game-stats span{font-family:"IBM Plex Mono",monospace;padding:6px 12px;border-radius:4px;background:#F3F0E4;font-weight:600;color:var(--ink);font-size:13px}
+.game-feedback{text-align:center;min-height:22px;font-weight:600;margin-bottom:14px;font-size:13.5px;color:var(--ink-soft)}
+.match-board{position:relative;display:flex;justify-content:space-between;gap:44px}
+.match-lines{position:absolute;top:0;left:0;pointer-events:none}
+.match-col{flex:1;display:flex;flex-direction:column;gap:9px;position:relative;z-index:1;min-width:0}
+.match-item{
+  display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:5px;
+  background:#fbfbf9;cursor:pointer;font-size:13.5px;transition:.12s;line-height:1.35
+}
+.match-item .m-icon{font-size:19px;flex-shrink:0}
+.match-item:hover{border-color:var(--amber)}
+.match-item.selected{border-color:var(--amber);background:#FBF1E1}
+.match-item.matched{border-color:var(--teal);background:#E3F1EC;cursor:default;opacity:.8}
+.match-item.wrong-flash{border-color:var(--red);background:var(--red-soft)}
+
+/* ---------- KAHOOT ---------- */
+.kahoot-panel{max-width:760px;margin:22px auto;padding:26px;border-radius:10px;background:#2B0B5E;border:1px solid #45188a;text-align:center;color:#fff}
+.kahoot-stats{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.kahoot-stats span{font-family:"IBM Plex Mono",monospace;padding:6px 12px;border-radius:20px;background:rgba(255,255,255,.12);font-weight:600;font-size:13px}
+#khTimerBadge{background:#fff;color:#2B0B5E}
+.kahoot-timerbar{height:6px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden;margin-bottom:16px}
+.kahoot-timerfill{height:100%;background:#46D1C6;width:100%;transition:width 1s linear}
+.kahoot-tag{font-size:11.5px;color:#C9B6F2;margin-bottom:8px}
+.kahoot-question{font-size:19px;font-weight:700;line-height:1.5;min-height:80px;display:flex;align-items:center;justify-content:center;padding:6px 4px}
+.kahoot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.kahoot-tile{
+  display:flex;align-items:center;gap:10px;border:0;border-radius:8px;padding:18px 16px;
+  font-weight:700;font-size:14.5px;text-align:left;cursor:pointer;color:#fff;transition:.1s;min-height:64px
+}
+.kahoot-tile:active{transform:scale(.98)}
+.kahoot-tile .kh-shape{font-size:18px;flex-shrink:0}
+.kahoot-tile.t0{background:#E5312B}
+.kahoot-tile.t1{background:#1368CE}
+.kahoot-tile.t2{background:#D89E00}
+.kahoot-tile.t3{background:#26890C}
+.kahoot-tile.disabled{pointer-events:none;opacity:.55}
+.kahoot-tile.correct{opacity:1;box-shadow:0 0 0 3px #46D1C6 inset}
+.kahoot-tile.wrong{opacity:.4}
+.kahoot-feedback{min-height:24px;font-weight:700;margin:10px 0;font-size:14.5px}
+.kahoot-result{background:rgba(255,255,255,.08);border-radius:8px;padding:20px;margin-top:6px}
+.kahoot-result .big{font-family:"IBM Plex Mono",monospace;font-size:34px;font-weight:700;color:#46D1C6;margin:8px 0}
+
+/* ---------- LEADERBOARD ---------- */
+.lb-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.lb-table th,.lb-table td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+.lb-table th{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-soft);background:#F3F0E4;font-weight:600}
+.lb-table td.rank{font-family:"IBM Plex Mono",monospace;font-weight:700;width:46px}
+.lb-table tr.me{background:#FBF1E1}
+.lb-table tr.me td{font-weight:600}
+.lb-table td.num{font-family:"IBM Plex Mono",monospace}
+.lb-empty{padding:26px;text-align:center;color:var(--ink-soft);font-size:13.5px}
+
+/* ---------- TEACHER COMMENTS ---------- */
+textarea.input{resize:vertical;min-height:70px;font-family:inherit}
+.tc-item{padding:12px 14px;border:1px solid var(--line);border-radius:5px;margin-bottom:8px;background:#fbfbf9}
+.tc-item .tc-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px}
+.tc-item .tc-name{font-weight:700;font-size:13.5px;color:var(--ink)}
+.tc-item .tc-time{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-soft)}
+.tc-item .tc-text{font-size:13.5px;color:#2A3550;line-height:1.65;margin-bottom:6px}
+.tc-item .tc-del{font-size:11.5px;color:var(--red);cursor:pointer;background:none;border:0;padding:0;text-decoration:underline}
+.tc-empty{color:var(--ink-soft);font-size:13.5px;padding:8px 0}
+
+/* ---------- DEVELOPMENT ---------- */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.score-card{text-align:center;padding:26px;border-radius:6px;background:var(--card);border:1px solid var(--line)}
+.score-card>div:first-child{font-size:13.5px;color:var(--ink-soft);margin-bottom:6px}
+.score-card .big{font-family:"IBM Plex Mono",monospace;font-size:38px;font-weight:600;color:var(--ink);margin:6px 0}
+.improve{text-align:center;padding:26px;margin-top:16px;border-radius:6px;background:var(--ink);color:#fff}
+.improve h2{font-size:15px;font-weight:600;color:#B9C2D8;margin-bottom:4px}
+.improve .big{font-family:"IBM Plex Mono",monospace;font-size:34px;font-weight:600;margin:6px 0;color:var(--amber)}
+
+.notice{padding:13px 16px;border-radius:5px;background:#F3F0E4;border:1px solid var(--line);margin-top:12px;line-height:1.7;font-size:13.5px;color:var(--ink-soft)}
+footer{text-align:center;padding:32px 20px;color:var(--ink-soft);font-size:12.5px;border-top:1px solid var(--line);margin-top:20px}
+
+@media(max-width:720px){
+  .login-body{padding:28px 22px}
+  .header-inner{flex-direction:column;align-items:flex-start;gap:10px}
+  .user-area{width:100%;justify-content:space-between}
+  .compare{grid-template-columns:1fr}
+  .kahoot-grid{grid-template-columns:1fr}
+  .match-board{gap:20px}
+  .match-item{font-size:12px;padding:9px 8px}
+  .question{font-size:16.5px}
+  .quiz-foot{flex-direction:column;align-items:stretch}
+  .hero h1{font-size:23px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-accent"></div>
+    <div class="login-body">
+      <div class="login-tag mono">รหัสวิชา 20000-1301</div>
+      <h1>บทเรียนออนไลน์</h1>
+      <h2>สื่อดิจิทัลเพื่อการเรียนรู้ วิชาวิทยาศาสตร์พื้นฐานอาชีพ</h2>
+      <span class="badge">ระดับชั้น ปวช.3</span>
+      <div class="login-desc">กรอกชื่อ–นามสกุลเพื่อเริ่มบทเรียน ระบบจะบันทึกคะแนนก่อนเรียนและหลังเรียนของคุณไว้เปรียบเทียบพัฒนาการ</div>
+      <label class="field-label">ชื่อ–นามสกุล</label>
+      <input id="studentName" class="input" type="text" placeholder="เช่น สมชาย ใจดี">
+      <button class="btn primary" style="width:100%" onclick="login()">เข้าสู่บทเรียน</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="mainPage">
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">🧪</div>
+      <div><div class="brand-title">วิทยาศาสตร์พื้นฐานอาชีพ</div><div class="brand-sub">ปวช.3 · 20000-1301</div></div>
+    </div>
+    <div class="user-area">
+      <span class="user-pill">👤 <span id="displayName"></span></span>
+      <button class="btn red" onclick="logout()">ออกจากระบบ</button>
+    </div>
+  </div>
+  <nav>
+    <button class="nav-btn active" onclick="go('home',this)">หน้าแรก</button>
+    <button class="nav-btn" id="navBefore" onclick="go('before',this)">ก่อนเรียน</button>
+    <button class="nav-btn locked" id="navKnowledge" onclick="go('knowledge',this)">เนื้อหา</button>
+    <button class="nav-btn locked" id="navAfter" onclick="go('after',this)">หลังเรียน</button>
+    <button class="nav-btn locked" id="navGame" onclick="go('game',this)">เกม</button>
+    <button class="nav-btn locked" id="navKahoot" onclick="go('kahoot',this)">Kahoot</button>
+    <button class="nav-btn locked" id="navLeaderboard" onclick="go('leaderboard',this)">ตารางคะแนน</button>
+    <button class="nav-btn locked" id="navTeacher" onclick="go('teacher',this)">ความเห็นครู</button>
+    <button class="nav-btn locked" id="navDevelopment" onclick="go('development',this)">พัฒนาการ</button>
+  </nav>
+</header>
+
+<main class="container">
+
+<section id="home" class="section active">
+  <div class="hero">
+    <div class="hero-eyebrow mono">BASIC SCIENCE FOR CAREER · 9 หน่วยการเรียนรู้</div>
+    <h1>วิทยาศาสตร์พื้นฐานอาชีพ</h1>
+    <p>วิชาที่นำกระบวนการคิดแบบวิทยาศาสตร์มาใช้วิเคราะห์และแก้ปัญหาในงานอาชีพ ตั้งแต่การวัด แรง อะตอม สาร ไปจนถึงเทคโนโลยีชีวภาพและนาโนเทคโนโลยี</p>
+  </div>
+
+  <div class="card purple"><div class="card-title"><span>📘</span>เกี่ยวกับรายวิชา</div>
+    <p>รายวิชา <strong>วิทยาศาสตร์พื้นฐานอาชีพ (Basic Science for Career)</strong> มุ่งให้ผู้เรียนระดับประกาศนียบัตรวิชาชีพนำทักษะกระบวนการทางวิทยาศาสตร์ไปใช้คิดวิเคราะห์ ตัดสินใจ และแก้ปัญหาที่พบในงานอาชีพจริง</p>
+  </div>
+
+  <div class="card blue"><div class="card-title"><span>🎯</span>จุดประสงค์การเรียนรู้</div>
+    <ul>
+      <li>อธิบายขั้นตอนของกระบวนการทางวิทยาศาสตร์และองค์ประกอบของโครงงานวิทยาศาสตร์ได้</li>
+      <li>ใช้หน่วย SI ในการวัด และวิเคราะห์แรงกับการเคลื่อนที่ในสถานการณ์พื้นฐานได้</li>
+      <li>อธิบายโครงสร้างอะตอม ตารางธาตุ ประเภทของสาร และการเปลี่ยนแปลงของสารได้</li>
+      <li>อธิบายการประยุกต์ใช้ปฏิกิริยาเคมี เทคโนโลยีชีวภาพ และนาโนเทคโนโลยีในงานอาชีพได้</li>
+    </ul>
+  </div>
+
+  <div class="card green-card"><div class="card-title"><span>📑</span>หน่วยการเรียนรู้ทั้งหมด</div>
+    <div class="index-list" id="unitIndex"></div>
+    <div class="path-strip"><b>เส้นทางการเรียน:</b> ก่อนเรียน → เนื้อหา 9 หน่วย → หลังเรียน → เกมโยงเส้นจับคู่ → Kahoot ตอบไว → ตารางคะแนน → ความเห็นครู → พัฒนาการ</div>
+  </div>
+</section>
+
+<section id="before" class="section">
+  <div class="card purple"><div class="card-title"><span>📝</span>แบบทดสอบก่อนเรียน</div><p>10 ข้อ ตัวเลือกเดียว ข้อละ 20 วินาที ใช้วัดพื้นฐานความรู้ก่อนเข้าสู่บทเรียน</p></div>
+  <div id="beforeQuiz" class="quiz-wrap"></div>
+</section>
+
+<section id="knowledge" class="section">
+  <div class="card blue"><div class="card-title"><span>📚</span>เนื้อหารายวิชา</div>
+    <p>เนื้อหาจัดตามหัวข้อการเรียนรู้ 9 หน่วยของรายวิชา โดยแบบทดสอบและเกมท้ายบทอ้างอิงเนื้อหาจากหน่วยเดียวกันนี้ทั้งหมด</p>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab('tab1',this)">หน่วยที่ 1–3</button>
+    <button class="tab-btn" onclick="openTab('tab2',this)">หน่วยที่ 4–6</button>
+    <button class="tab-btn" onclick="openTab('tab3',this)">หน่วยที่ 7–9</button>
+  </div>
+
+  <div id="tab1" class="tab-content active">
+    <div class="card purple">
+      <div class="unit-tag">U01 · กระบวนการทางวิทยาศาสตร์</div>
+      <div class="card-title"><span>1️⃣</span>กระบวนการทางวิทยาศาสตร์</div>
+      <p>แนวทางศึกษาปัญหาอย่างเป็นระบบ ประกอบด้วย 6 ขั้นตอนหลัก: สังเกตและระบุปัญหา → ตั้งสมมติฐาน (คำตอบที่คาดคะเนและตรวจสอบได้) → ออกแบบการทดลองโดยควบคุมตัวแปร → เก็บรวบรวมข้อมูล → วิเคราะห์ข้อมูล → สรุปและเผยแพร่ผล</p>
+      <p>การทดลองที่ดีต้องแยก <strong>ตัวแปรต้น</strong> (สิ่งที่เปลี่ยน) <strong>ตัวแปรตาม</strong> (ผลที่วัด) และ <strong>ตัวแปรควบคุม</strong> (สิ่งที่คงที่) ให้ชัดเจน เพื่อให้ผลการทดลองน่าเชื่อถือ</p>
+      <div class="kw-row"><span class="kw">สมมติฐาน</span><span class="kw">ตัวแปรต้น/ตาม/ควบคุม</span><span class="kw">การวิเคราะห์ข้อมูล</span></div>
+    </div>
+    <div class="card blue">
+      <div class="unit-tag">U02 · โครงงานวิทยาศาสตร์</div>
+      <div class="card-title"><span>2️⃣</span>โครงงานวิทยาศาสตร์</div>
+      <p>การศึกษาค้นคว้าอย่างเป็นระบบเพื่อหาคำตอบจากปัญหาที่สนใจ แบ่งเป็น 4 ประเภทหลัก ได้แก่ โครงงานประเภทสำรวจ/รวบรวมข้อมูล ประเภททดลอง ประเภทสิ่งประดิษฐ์ และประเภททฤษฎี</p>
+      <p>องค์ประกอบสำคัญของรายงาน: ที่มาและความสำคัญ วัตถุประสงค์ สมมติฐาน วิธีดำเนินงาน ผลการศึกษา และข้อเสนอแนะ โดยต้องสรุปผลจากหลักฐานที่เก็บได้จริง ไม่ใช่ความคิดเห็นส่วนตัว</p>
+      <div class="kw-row"><span class="kw">โครงงาน 4 ประเภท</span><span class="kw">ที่มาและวัตถุประสงค์</span></div>
+    </div>
+    <div class="card green-card">
+      <div class="unit-tag">U03 · หน่วยและการวัด</div>
+      <div class="card-title"><span>3️⃣</span>หน่วยและการวัด</div>
+      <p>การวัดในงานอาชีพต้องเลือกเครื่องมือและหน่วยให้เหมาะสมกับปริมาณ และบันทึกทั้งตัวเลขกับหน่วยเสมอ เพื่อให้สื่อสารตรงกัน</p>
+      <table class="spec-table">
+        <tr><th>ปริมาณ</th><th>หน่วย SI</th><th>สัญลักษณ์</th></tr>
+        <tr><td>ความยาว</td><td class="mono">เมตร</td><td class="mono">m</td></tr>
+        <tr><td>มวล</td><td class="mono">กิโลกรัม</td><td class="mono">kg</td></tr>
+        <tr><td>เวลา</td><td class="mono">วินาที</td><td class="mono">s</td></tr>
+        <tr><td>กระแสไฟฟ้า</td><td class="mono">แอมแปร์</td><td class="mono">A</td></tr>
+      </table>
+      <p>เครื่องมือวัดละเอียด เช่น เวอร์เนียร์คาลิปเปอร์และไมโครมิเตอร์ ช่วยให้งานช่างวัดขนาดชิ้นงานได้แม่นยำระดับมิลลิเมตรถึงไมโครเมตร</p>
+      <div class="kw-row"><span class="kw">หน่วย SI</span><span class="kw">ความแม่นยำ</span><span class="kw">เวอร์เนียร์/ไมโครมิเตอร์</span></div>
+    </div>
+  </div>
+
+  <div id="tab2" class="tab-content">
+    <div class="card orange">
+      <div class="unit-tag">U04 · แรงและการเคลื่อนที่</div>
+      <div class="card-title"><span>4️⃣</span>แรงและการเคลื่อนที่</div>
+      <p><strong>แรง</strong> คือการผลักหรือดึงที่ทำให้วัตถุเปลี่ยนสภาพการเคลื่อนที่ได้ หน่วยของแรงในระบบ SI คือ <strong>นิวตัน (N)</strong> ตามสมการ F = ma (แรง = มวล × ความเร่ง)</p>
+      <p>อัตราเร็วหาได้จาก v = s/t (ระยะทาง ÷ เวลา) ส่วนความเร็วต้องระบุทิศทางด้วย งานที่เกี่ยวข้อง เช่น การคำนวณแรงยกของ การเลือกอุปกรณ์ผ่อนแรง และการพิจารณาแรงเสียดทานในเครื่องจักร</p>
+      <div class="kw-row"><span class="kw">F = ma</span><span class="kw">นิวตัน (N)</span><span class="kw">แรงเสียดทาน</span></div>
+    </div>
+    <div class="card purple">
+      <div class="unit-tag">U05 · อะตอมและตารางธาตุ</div>
+      <div class="card-title"><span>5️⃣</span>อะตอมและตารางธาตุ</div>
+      <p>อะตอมประกอบด้วย <strong>โปรตอน</strong> (ประจุบวก) และ <strong>นิวตรอน</strong> (ไม่มีประจุ) รวมกันเป็นนิวเคลียส และ <strong>อิเล็กตรอน</strong> (ประจุลบ) เคลื่อนที่รอบนิวเคลียส เลขอะตอมคือจำนวนโปรตอนในอะตอมของธาตุนั้น</p>
+      <p>ตารางธาตุจัดเรียงธาตุตามเลขอะตอมจากน้อยไปมาก ธาตุในหมู่ (แนวตั้ง) เดียวกันมีสมบัติคล้ายกัน ความรู้นี้ช่วยเลือกวัสดุและสารเคมีให้เหมาะกับงาน</p>
+      <div class="kw-row"><span class="kw">โปรตอน/นิวตรอน/อิเล็กตรอน</span><span class="kw">เลขอะตอม</span></div>
+    </div>
+    <div class="card blue">
+      <div class="unit-tag">U06 · สารและการเปลี่ยนแปลง</div>
+      <div class="card-title"><span>6️⃣</span>สารและการเปลี่ยนแปลง</div>
+      <p>สารจำแนกได้เป็นธาตุ สารประกอบ และสารผสม การเปลี่ยนแปลงของสารมี 2 แบบ: <strong>การเปลี่ยนแปลงทางกายภาพ</strong> (เปลี่ยนรูปแต่ยังเป็นสารเดิม เช่น น้ำแข็งหลอมเหลว) และ <strong>การเปลี่ยนแปลงทางเคมี</strong> (เกิดสารใหม่ เช่น การเผาไหม้)</p>
+      <div class="kw-row"><span class="kw">การเปลี่ยนแปลงทางกายภาพ</span><span class="kw">การเปลี่ยนแปลงทางเคมี</span></div>
+    </div>
+  </div>
+
+  <div id="tab3" class="tab-content">
+    <div class="card orange">
+      <div class="unit-tag">U07 · ปฏิกิริยาเคมีในชีวิตประจำวัน</div>
+      <div class="card-title"><span>7️⃣</span>ปฏิกิริยาเคมีในชีวิตประจำวัน</div>
+      <p>ปฏิกิริยาเคมีคือกระบวนการที่สารตั้งต้นเปลี่ยนเป็นสารใหม่ที่มีสมบัติต่างไปจากเดิม ตัวอย่างที่พบบ่อย ได้แก่ การเผาไหม้ <strong>การเกิดสนิมของเหล็ก</strong> (ปฏิกิริยาออกซิเดชัน) และปฏิกิริยาระหว่างกรดกับเบส</p>
+      <p>ในงานอาชีพต้องคำนึงถึงความปลอดภัยเมื่อใช้สารเคมี เช่น อ่านฉลากและสัญลักษณ์ความปลอดภัยก่อนใช้งานเสมอ</p>
+      <div class="kw-row"><span class="kw">ออกซิเดชัน/สนิม</span><span class="kw">กรด–เบส</span><span class="kw">ความปลอดภัยสารเคมี</span></div>
+    </div>
+    <div class="card green-card">
+      <div class="unit-tag">U08 · เทคโนโลยีชีวภาพ</div>
+      <div class="card-title"><span>8️⃣</span>เทคโนโลยีชีวภาพ</div>
+      <p>การนำสิ่งมีชีวิต เซลล์ หรือเอนไซม์มาใช้ประโยชน์ เช่น การหมักด้วยจุลินทรีย์เพื่อผลิตอาหาร (โยเกิร์ต น้ำปลา) การผลิตยาและวัคซีน และการปรับปรุงพันธุ์พืชในภาคเกษตร</p>
+      <div class="kw-row"><span class="kw">การหมัก</span><span class="kw">จุลินทรีย์</span><span class="kw">เกษตร/การแพทย์</span></div>
+    </div>
+    <div class="card purple">
+      <div class="unit-tag">U09 · นาโนเทคโนโลยี</div>
+      <div class="card-title"><span>9️⃣</span>นาโนเทคโนโลยี</div>
+      <p>เกี่ยวข้องกับการออกแบบหรือควบคุมวัสดุในระดับนาโนเมตร (1 นาโนเมตร = 1 ในพันล้านเมตร) ซึ่งวัสดุในระดับนี้อาจมีสมบัติต่างจากขนาดปกติ นำไปพัฒนาผลิตภัณฑ์ เช่น ผ้ากันน้ำ ครีมกันแดด และสารเคลือบผิวขั้นสูง</p>
+      <div class="kw-row"><span class="kw">1 nm = 10⁻⁹ m</span><span class="kw">วัสดุเคลือบ/ฟิล์มนาโน</span></div>
+    </div>
+    <div class="card blue">
+      <div class="unit-tag mono">SUMMARY</div>
+      <div class="card-title"><span>🧠</span>สรุปภาพรวม 9 หน่วย</div>
+      <p>กระบวนการทางวิทยาศาสตร์ → โครงงานวิทยาศาสตร์ → หน่วยและการวัด → แรงและการเคลื่อนที่ → อะตอมและตารางธาตุ → สารและการเปลี่ยนแปลง → ปฏิกิริยาเคมีในชีวิตประจำวัน → เทคโนโลยีชีวภาพ → นาโนเทคโนโลยี</p>
+    </div>
+  </div>
+</section>
+
+<section id="after" class="section">
+  <div class="card green-card"><div class="card-title"><span>🎯</span>แบบทดสอบหลังเรียน</div><p>10 ข้อ ตัวเลือกเดียว ข้อละ 20 วินาที (ใช้ชุดข้อสอบเดียวกับก่อนเรียน แต่สลับลำดับตัวเลือก เพื่อเทียบพัฒนาการอย่างยุติธรรม)</p></div>
+  <div id="afterQuiz" class="quiz-wrap"></div>
+</section>
+
+<section id="game" class="section">
+  <div class="card purple"><div class="card-title"><span>🔗</span>เกมโยงเส้นจับคู่</div>
+    <p>คลิกสัญลักษณ์ฝั่งซ้าย แล้วคลิกชื่อหน่วยการเรียนรู้ฝั่งขวาที่ตรงกัน จับคู่ให้ครบทั้ง 9 หน่วย ยิ่งใช้เวลาน้อยและพลาดน้อยยิ่งเก่ง</p>
+  </div>
+  <div class="game-panel">
+    <div class="game-stats"><span>จับคู่ได้ <span id="mgMatches">0</span>/9</span><span>พลาด <span id="mgMisses">0</span> ครั้ง</span><span>⏱ <span id="mgTime">00:00</span></span></div>
+    <div id="mgFeedback" class="game-feedback">กด “เริ่มเกมใหม่” เพื่อเริ่มจับคู่</div>
+    <div class="match-board" id="mgBoard">
+      <svg id="mgLines" class="match-lines"></svg>
+      <div class="match-col" id="mgLeft"></div>
+      <div class="match-col" id="mgRight"></div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:16px"><button class="btn green" onclick="startGame()">เริ่มเกมใหม่</button></div>
+</section>
+
+<section id="kahoot" class="section">
+  <div class="card purple"><div class="card-title"><span>⚡</span>Kahoot ตอบไว</div>
+    <p>เกมตอบคำถามแบบเรียลไทม์สไตล์ Kahoot 10 ข้อใหม่ (ไม่ซ้ำกับแบบทดสอบและเกมภารกิจ) ยิ่งตอบถูกและตอบเร็ว ยิ่งได้คะแนนมาก สูงสุดข้อละ 1,000 คะแนน</p>
+  </div>
+  <div class="kahoot-panel">
+    <div class="kahoot-stats">
+      <span>ข้อ <span id="khIndex">1</span>/10</span>
+      <span>คะแนนรวม <span id="khScore">0</span></span>
+      <span id="khTimerBadge">⏱ <span id="khTime">15</span>s</span>
+    </div>
+    <div class="kahoot-timerbar"><div class="kahoot-timerfill" id="khTimerFill"></div></div>
+    <div class="kahoot-tag mono" id="khTag">กด “เริ่ม Kahoot” เพื่อเริ่มเล่น</div>
+    <div class="kahoot-question" id="khQuestion">พร้อมตอบคำถามแบบไวหรือยัง?</div>
+    <div class="kahoot-grid" id="khOptions"></div>
+    <div class="kahoot-feedback" id="khFeedback"></div>
+    <button class="btn amber-btn" id="khNext" onclick="nextKahoot()" style="display:none">ข้อถัดไป →</button>
+  </div>
+  <div style="text-align:center;margin-top:16px"><button class="btn green" onclick="startKahoot()">เริ่ม Kahoot</button></div>
+</section>
+
+<section id="leaderboard" class="section">
+  <div class="card blue"><div class="card-title"><span>🏆</span>ตารางคะแนนรวม</div>
+    <p>อันดับคำนวณจากคะแนนหลังเรียน (50%) และคะแนน Kahoot (50%) ของทุกคนที่เคยกรอกชื่อเข้าใช้งาน — ข้อมูลเก็บบนฐานข้อมูลกลาง ทุกคนที่เปิดเว็บนี้จากอุปกรณ์ของตัวเองจะเห็นตารางเดียวกันแบบเรียลไทม์</p>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div id="lbBox"></div>
+  </div>
+  <div style="text-align:center;margin-top:14px"><button class="btn gray" onclick="clearLeaderboard()">ล้างตารางคะแนน</button></div>
+</section>
+
+<section id="teacher" class="section">
+  <div class="card orange"><div class="card-title"><span>🧑‍🏫</span>ความเห็นจากคุณครู</div>
+    <p>คุณครูเขียนความคิดเห็นหรือคำแนะนำถึงผู้เรียนแต่ละคนได้ที่นี่ ความเห็นจะขึ้นบนฐานข้อมูลกลางทันที ผู้เรียนที่ชื่อตรงกันจะเห็นความเห็นถึงตนเองไม่ว่าจะเปิดจากอุปกรณ์ไหนก็ตาม</p>
+  </div>
+  <div class="card">
+    <div class="card-title" style="font-size:15px"><span>✏️</span>เขียนความเห็นใหม่</div>
+    <label class="field-label">ถึงผู้เรียน (ชื่อ–นามสกุล)</label>
+    <input id="tcStudent" class="input" type="text" placeholder="เช่น สมชาย ใจดี">
+    <label class="field-label">ข้อความ</label>
+    <textarea id="tcText" class="input" rows="3" placeholder="เช่น ทำแบบทดสอบได้ดีขึ้นมาก ลองทบทวนหน่วยที่ 5 เพิ่มเติมนะ"></textarea>
+    <button class="btn amber-btn" onclick="addTeacherComment()">ส่งความเห็น</button>
+  </div>
+  <div class="card blue" id="tcMineBox" style="display:none">
+    <div class="card-title" style="font-size:15px"><span>💬</span>ความเห็นถึงฉัน</div>
+    <div id="tcMineList"></div>
+  </div>
+  <div class="card">
+    <div class="card-title" style="font-size:15px"><span>📋</span>ความเห็นทั้งหมดในห้องนี้</div>
+    <div id="tcAllList"></div>
+  </div>
+</section>
+
+<section id="development" class="section">
+  <div class="card blue"><div class="card-title"><span>📊</span>ตรวจสอบคะแนนและการพัฒนา</div><p>เปรียบเทียบคะแนนก่อนเรียนและหลังเรียน พร้อมระดับคุณภาพและผลต่างของคะแนน</p></div>
+  <div class="compare">
+    <div class="score-card"><div>คะแนนก่อนเรียน</div><div class="big" id="beforeScore">-</div><div id="beforeQuality">ยังไม่มีข้อมูล</div></div>
+    <div class="score-card"><div>คะแนนหลังเรียน</div><div class="big" id="afterScore">-</div><div id="afterQuality">ยังไม่มีข้อมูล</div></div>
+  </div>
+  <div class="improve"><h2>พัฒนาการ</h2><div class="big" id="improvementValue">-</div><p id="improvementText">ทำแบบทดสอบให้ครบเพื่อดูพัฒนาการ</p></div>
+</section>
+
+</main>
+<footer>บทเรียนออนไลน์ · วิทยาศาสตร์พื้นฐานอาชีพ 20000-1301 · ปวช.3</footer>
+</div>
+
+<script>
+const UNIT_NAMES={1:"กระบวนการทางวิทยาศาสตร์",2:"โครงงานวิทยาศาสตร์",3:"หน่วยและการวัด",4:"แรงและการเคลื่อนที่",5:"อะตอมและตารางธาตุ",6:"สารและการเปลี่ยนแปลง",7:"ปฏิกิริยาเคมีในชีวิตประจำวัน",8:"เทคโนโลยีชีวภาพ",9:"นาโนเทคโนโลยี",0:"การประยุกต์ใช้ในงานอาชีพ"};
+
+/* ============================================================
+   ฐานข้อมูลกลาง (Firebase Realtime Database)
+   ใช้สำหรับ "ตารางคะแนน" และ "ความเห็นครู" ให้ทุกคนที่เปิดเว็บนี้
+   (คนละเครื่อง คนละมือถือ คนละที่) เห็นข้อมูลชุดเดียวกันแบบเรียลไทม์
+   ใช้งานได้กับใครก็ตามที่เข้าเว็บ ไม่ต้องมีบัญชี Claude
+
+   วิธีตั้งค่า (ทำครั้งเดียวก่อนอัปโหลดขึ้นเว็บโรงเรียน):
+   1) ไปที่ https://console.firebase.google.com แล้วสร้างโปรเจกต์ใหม่ (ฟรี)
+   2) เมนูซ้าย > Build > Realtime Database > Create Database
+      เลือก location ใดก็ได้ แล้วเริ่มในโหมด "Test mode"
+   3) แท็บ Rules ของ Realtime Database ใส่กฎนี้แล้วกด Publish:
+        { "rules": { ".read": true, ".write": true } }
+      (หมายเหตุ: กฎนี้เปิดอ่าน/เขียนแบบสาธารณะ เหมาะกับคะแนน/ความเห็น
+       ในชั้นเรียนซึ่งไม่ใช่ข้อมูลลับ แต่ใครมีลิงก์ฐานข้อมูลก็แก้ไขได้
+       ถ้าต้องการความปลอดภัยมากขึ้นสามารถตั้งกฎเพิ่มเติมได้ภายหลัง)
+   4) ไปที่ไอคอนเฟือง > Project settings > เลื่อนลงมาที่ "Your apps"
+      กดสัญลักษณ์ </> (Web) เพื่อสร้างแอปเว็บ แล้วคัดลอกค่า
+      firebaseConfig ทั้งก้อนมาวางแทนที่ค่าด้านล่างนี้ทั้งหมด
+   5) บันทึกไฟล์แล้วอัปโหลดขึ้นเว็บไซต์/LMS ได้เลย — ถ้ายังไม่ได้แก้ไข
+      ค่าด้านล่าง (ยังเป็น "YOUR_API_KEY") เว็บจะยังใช้งานได้ปกติทุกส่วน
+      ยกเว้นตารางคะแนนกับความเห็นครูที่จะแจ้งว่ายังไม่ได้ตั้งค่า
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "YOUR_APP_ID"
+};
+let dbReady=false, db=null;
+try{
+  if(typeof firebase!=="undefined" && firebaseConfig.apiKey && firebaseConfig.apiKey!=="YOUR_API_KEY"){
+    firebase.initializeApp(firebaseConfig);
+    db=firebase.database();
+    dbReady=true;
+  }
+}catch(e){ console.warn("เชื่อมต่อฐานข้อมูลกลางไม่สำเร็จ:",e); dbReady=false; }
+function lbKey(name){ return encodeURIComponent(name.trim()); }
+
+
+const questions=[
+ {q:"กระบวนการทางวิทยาศาสตร์ ขั้นตอนใดมีหน้าที่เสนอคำตอบที่คาดคะเนและสามารถนำไปตรวจสอบได้?",a:["การตั้งสมมติฐาน","การสรุปผล","การเผยแพร่ผล","การจัดทำรายงาน"],c:0,u:1},
+ {q:"โครงงานวิทยาศาสตร์ประเภทใดเน้นการสร้างชิ้นงานหรืออุปกรณ์ขึ้นใหม่เพื่อแก้ปัญหา?",a:["ประเภทสำรวจ","ประเภทสิ่งประดิษฐ์","ประเภททฤษฎี","ประเภทเผยแพร่ผล"],c:1,u:2},
+ {q:"หน่วย SI ที่ใช้วัดความยาวคือข้อใด?",a:["กิโลกรัม (kg)","เมตร (m)","วินาที (s)","แอมแปร์ (A)"],c:1,u:3},
+ {q:"หน่วย SI ของแรงคือข้อใด?",a:["จูล (J)","วัตต์ (W)","นิวตัน (N)","ปาสคาล (Pa)"],c:2,u:4},
+ {q:"อนุภาคใดในอะตอมมีประจุไฟฟ้าเป็นลบ?",a:["โปรตอน","นิวตรอน","อิเล็กตรอน","นิวเคลียส"],c:2,u:5},
+ {q:"ข้อใดเป็นการเปลี่ยนแปลงทางกายภาพ?",a:["เหล็กเกิดสนิม","กระดาษถูกเผาไหม้","น้ำแข็งหลอมเหลวเป็นน้ำ","อาหารเกิดการบูด"],c:2,u:6},
+ {q:"ข้อใดเป็นตัวอย่างของปฏิกิริยาเคมีที่พบได้ในชีวิตประจำวัน?",a:["การละลายน้ำแข็ง","การเกิดสนิมของเหล็ก","การตัดกระดาษ","การบดเมล็ดกาแฟ"],c:1,u:7},
+ {q:"ข้อใดเป็นการประยุกต์ใช้เทคโนโลยีชีวภาพ?",a:["การหมักโดยใช้จุลินทรีย์เพื่อผลิตอาหาร","การตัดโลหะด้วยเครื่องจักร","การวัดความยาวด้วยไม้บรรทัด","การชั่งมวลด้วยเครื่องชั่ง"],c:0,u:8},
+ {q:"นาโนเทคโนโลยีเกี่ยวข้องกับการควบคุมหรือออกแบบวัสดุในระดับใด?",a:["ระดับนาโน","ระดับกิโลเมตร","ระดับภูมิประเทศ","ระดับดาราศาสตร์"],c:0,u:9},
+ {q:"ข้อใดสะท้อนการนำวิทยาศาสตร์ไปใช้ในงานอาชีพได้เหมาะสมที่สุด?",a:["เลือกวัสดุโดยดูเฉพาะสี","ใช้ข้อมูลการวัดและสมบัติของวัสดุเพื่อช่วยตัดสินใจแก้ปัญหา","หลีกเลี่ยงการทดลองทุกชนิด","ตัดสินใจจากความรู้สึกโดยไม่ใช้ข้อมูล"],c:1,u:0}
+];
+
+let quizType="",qIndex=0,score=0,selected=null,timer=null;
+
+function login(){
+  const name=document.getElementById("studentName").value.trim();
+  if(!name){alert("กรุณากรอกชื่อ–นามสกุลก่อนเข้าสู่บทเรียน");return}
+  localStorage.setItem("studentName",name);
+  showMain();
+}
+function showMain(){
+  document.getElementById("loginPage").style.display="none";
+  document.getElementById("mainPage").style.display="block";
+  document.getElementById("displayName").textContent=localStorage.getItem("studentName")||"";
+  renderUnitIndex();
+  updateLocks();updateDevelopment();startGame();
+  if(typeof updateNavLock==="function")updateNavLock();
+}
+function renderUnitIndex(){
+  const box=document.getElementById("unitIndex");
+  if(!box)return;
+  let html="";
+  for(let i=1;i<=9;i++){
+    html+=`<div class="index-row"><span class="index-num">U0${i}</span><span class="index-name">${UNIT_NAMES[i]}</span></div>`;
+  }
+  box.innerHTML=html;
+}
+function logout(){
+  if(confirm("ต้องการออกจากระบบและล้างข้อมูลชื่อกับคะแนนทั้งหมดหรือไม่?")){
+    ["studentName","beforeScore","afterScore"].forEach(k=>localStorage.removeItem(k));
+    location.reload();
+  }
+}
+function unlocked(){return localStorage.getItem("beforeScore")!==null}
+function go(id,btn){
+  if(!unlocked() && !["home","before"].includes(id)){
+    alert("🔒 กรุณาทำแบบทดสอบก่อนเรียนให้เสร็จก่อน");return;
+  }
+  document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  if(id==="before" && !unlocked()) startQuiz("before");
+  if(id==="after" && localStorage.getItem("afterScore")===null) startQuiz("after");
+  if(id==="leaderboard") renderLeaderboard();
+  if(id==="teacher") renderComments();
+}
+function updateLocks(){
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("locked"));
+  if(!unlocked()){
+    ["navKnowledge","navAfter","navGame","navKahoot","navLeaderboard","navTeacher","navDevelopment"].forEach(id=>document.getElementById(id).classList.add("locked"));
+  }
+}
+function openTab(id,btn){
+  document.querySelectorAll(".tab-content").forEach(x=>x.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".tab-btn").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+}
+function startQuiz(type){
+  quizType=type;qIndex=0;score=0;selected=null;renderQuestion();
+}
+function renderQuestion(){
+  clearInterval(timer);
+  const box=document.getElementById(quizType==="before"?"beforeQuiz":"afterQuiz");
+  if(qIndex>=questions.length){finishQuiz();return}
+  const q=questions[qIndex];
+  let opts=q.a.map((text,i)=>({text,index:i}));
+  if(quizType==="after") opts.sort(()=>Math.random()-.5);
+  box.innerHTML=`
+    <div class="card">
+      <div class="quiz-top"><strong>ข้อ ${qIndex+1} / 10</strong><div class="progress"><div class="progress-bar" style="width:${qIndex*10}%"></div></div><div class="timer">${"⏱"} <span id="time">20</span>s</div></div>
+      <div class="q-tag">หน่วยที่ ${q.u||"—"} · ${UNIT_NAMES[q.u]}</div>
+      <div class="question">${q.q}</div>
+      <div class="options">${opts.map((o,i)=>`<div class="option" onclick="choose(this,${o.index})"><span class="opt-letter">${String.fromCharCode(65+i)}</span><span class="opt-text">${o.text}</span></div>`).join("")}</div>
+      <div class="quiz-foot"><span>เลือกคำตอบที่ถูกต้องที่สุด 1 ข้อ</span><button class="btn amber-btn" onclick="nextQuestion()">${qIndex===9?"ส่งคำตอบ":"ข้อถัดไป →"}</button></div>
+    </div>`;
+  selected=null;
+  let t=20;document.getElementById("time").textContent=t;
+  timer=setInterval(()=>{t--;const el=document.getElementById("time");if(el)el.textContent=t;if(t<=0)nextQuestion()},1000);
+}
+function choose(el,index){
+  document.querySelectorAll(".option").forEach(x=>x.classList.remove("selected"));
+  el.classList.add("selected");selected=index;
+}
+function nextQuestion(){
+  clearInterval(timer);
+  if(selected!==null && selected===questions[qIndex].c)score++;
+  qIndex++;renderQuestion();
+}
+function quality(s){
+  if(s>=9)return "🌟 ดีเยี่ยม";
+  if(s>=7)return "😊 ดี";
+  if(s>=5)return "🙂 พอใช้";
+  return "📖 ควรพัฒนา";
+}
+function finishQuiz(){
+  const key=quizType==="before"?"beforeScore":"afterScore";
+  localStorage.setItem(key,score);
+  const box=document.getElementById(quizType==="before"?"beforeQuiz":"afterQuiz");
+  box.innerHTML=`<div class="card result"><h2>${quizType==="before"?"ทำแบบทดสอบก่อนเรียนเสร็จแล้ว":"ทำแบบทดสอบหลังเรียนเสร็จแล้ว"}</h2><div class="score-circle"><strong>${score}/10</strong><span>คะแนน</span></div><h3>${quality(score)}</h3><p>${quizType==="before"?"ปลดล็อกเนื้อหา แบบทดสอบหลังเรียน เกม และผลพัฒนาการแล้ว":"สามารถตรวจสอบผลพัฒนาการของคุณได้แล้ว"}</p><br><button class="btn amber-btn" onclick="goById('${quizType==="before"?"knowledge":"development"}')">${quizType==="before"?"ไปศึกษาเนื้อหา →":"ดูผลพัฒนาการ →"}</button></div>`;
+  updateLocks();updateDevelopment();
+  if(typeof updateNavLock==="function")updateNavLock();
+  upsertLeaderboard(quizType==="before"?{beforeScore:score}:{afterScore:score});
+}
+function goById(id){
+  const btn=document.querySelector(`[onclick*="go('${id}'"]`);
+  go(id,btn);
+}
+const MATCH_UNITS=[
+ {u:1,icon:"🧭"},{u:2,icon:"📋"},{u:3,icon:"📏"},{u:4,icon:"🏋️"},{u:5,icon:"⚛️"},
+ {u:6,icon:"🧊"},{u:7,icon:"⚗️"},{u:8,icon:"🧬"},{u:9,icon:"🔬"}
+];
+function shuffleArr(a){
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+let mgSelected=null,mgMatches=0,mgMisses=0,mgPairs=[],mgSeconds=0,mgClock=null,mgLocked=false;
+
+function startGame(){
+  clearInterval(mgClock);
+  mgSelected=null;mgMatches=0;mgMisses=0;mgPairs=[];mgSeconds=0;mgLocked=false;
+  document.getElementById("mgMatches").textContent="0";
+  document.getElementById("mgMisses").textContent="0";
+  document.getElementById("mgTime").textContent="00:00";
+  document.getElementById("mgFeedback").textContent="คลิกสัญลักษณ์ฝั่งซ้าย แล้วคลิกชื่อหน่วยฝั่งขวาที่ตรงกัน";
+  const leftOrder=shuffleArr(MATCH_UNITS.map(m=>m.u));
+  const rightOrder=shuffleArr(MATCH_UNITS.map(m=>m.u));
+  document.getElementById("mgLeft").innerHTML=leftOrder.map(u=>{
+    const m=MATCH_UNITS.find(x=>x.u===u);
+    return `<div class="match-item" data-side="left" data-unit="${u}" onclick="clickMatchItem(this)"><span class="m-icon">${m.icon}</span><span class="mono">U0${u}</span></div>`;
+  }).join("");
+  document.getElementById("mgRight").innerHTML=rightOrder.map(u=>
+    `<div class="match-item" data-side="right" data-unit="${u}" onclick="clickMatchItem(this)"><span>${UNIT_NAMES[u]}</span></div>`
+  ).join("");
+  drawMatchLines();
+  mgClock=setInterval(()=>{
+    mgSeconds++;
+    const m=String(Math.floor(mgSeconds/60)).padStart(2,"0");
+    const s=String(mgSeconds%60).padStart(2,"0");
+    document.getElementById("mgTime").textContent=m+":"+s;
+  },1000);
+}
+function drawMatchLines(){
+  const svg=document.getElementById("mgLines");
+  const board=document.getElementById("mgBoard");
+  if(!svg||!board)return;
+  const boardRect=board.getBoundingClientRect();
+  svg.setAttribute("width",boardRect.width);
+  svg.setAttribute("height",boardRect.height);
+  svg.innerHTML=mgPairs.map(p=>{
+    const lRect=p.leftEl.getBoundingClientRect();
+    const rRect=p.rightEl.getBoundingClientRect();
+    const x1=lRect.right-boardRect.left, y1=lRect.top+lRect.height/2-boardRect.top;
+    const x2=rRect.left-boardRect.left, y2=rRect.top+rRect.height/2-boardRect.top;
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1F7A6C" stroke-width="2.5" stroke-linecap="round"/>`;
+  }).join("");
+}
+window.addEventListener("resize",()=>{ if(mgPairs.length) drawMatchLines(); });
+
+function clickMatchItem(el){
+  if(mgLocked||el.classList.contains("matched"))return;
+  const side=el.dataset.side, unit=parseInt(el.dataset.unit,10);
+  if(!mgSelected){
+    mgSelected={side,unit,el};
+    el.classList.add("selected");
+    return;
+  }
+  if(mgSelected.el===el)return;
+  if(mgSelected.side===side){
+    mgSelected.el.classList.remove("selected");
+    mgSelected={side,unit,el};
+    el.classList.add("selected");
+    return;
+  }
+  const leftSel=side==="left"?{unit,el}:mgSelected;
+  const rightSel=side==="right"?{unit,el}:mgSelected;
+  if(leftSel.unit===rightSel.unit){
+    leftSel.el.classList.remove("selected");leftSel.el.classList.add("matched");
+    rightSel.el.classList.remove("selected");rightSel.el.classList.add("matched");
+    mgPairs.push({leftEl:leftSel.el,rightEl:rightSel.el});
+    drawMatchLines();
+    mgMatches++;
+    document.getElementById("mgMatches").textContent=mgMatches;
+    document.getElementById("mgFeedback").textContent="✅ ถูกต้อง! หน่วยที่ "+leftSel.unit+" · "+UNIT_NAMES[leftSel.unit];
+    mgSelected=null;
+    if(mgMatches===MATCH_UNITS.length) finishGame();
+  }else{
+    mgLocked=true;
+    leftSel.el.classList.add("wrong-flash");
+    rightSel.el.classList.add("wrong-flash");
+    mgMisses++;
+    document.getElementById("mgMisses").textContent=mgMisses;
+    document.getElementById("mgFeedback").textContent="ยังไม่ตรงกัน ลองใหม่อีกครั้ง";
+    setTimeout(()=>{
+      leftSel.el.classList.remove("selected","wrong-flash");
+      rightSel.el.classList.remove("wrong-flash");
+      mgSelected=null;
+      mgLocked=false;
+    },700);
+  }
+}
+function finishGame(){
+  clearInterval(mgClock);
+  const m=String(Math.floor(mgSeconds/60)).padStart(2,"0");
+  const s=String(mgSeconds%60).padStart(2,"0");
+  document.getElementById("mgFeedback").innerHTML="🎉 จับคู่ครบทั้ง 9 หน่วยแล้ว! เวลา "+m+":"+s+" · พลาด "+mgMisses+" ครั้ง";
+}
+
+const kahootQuestions=[
+ {q:"ขั้นตอนแรกของกระบวนการทางวิทยาศาสตร์คือข้อใด?",a:["การสังเกตและระบุปัญหา","การเขียนรายงานผล","การให้คะแนนโครงงาน","การเผยแพร่ผลงาน"],c:0,u:1},
+ {q:"โครงงานวิทยาศาสตร์ประเภทใดเน้นสำรวจและรวบรวมข้อมูลโดยไม่ต้องทดลอง?",a:["ประเภททดลอง","ประเภทสำรวจ/รวบรวมข้อมูล","ประเภทสิ่งประดิษฐ์","ประเภททฤษฎี"],c:1,u:2},
+ {q:"ปริมาณใดมีหน่วย SI เป็นกิโลกรัม (kg)?",a:["ความยาว","เวลา","มวล","กระแสไฟฟ้า"],c:2,u:3},
+ {q:"สมการ F = ma ใช้คำนวณปริมาณใด?",a:["งาน","แรง","ความดัน","พลังงาน"],c:1,u:4},
+ {q:"อนุภาคใดอยู่รวมกันเป็นนิวเคลียสของอะตอม?",a:["อิเล็กตรอนอย่างเดียว","โปรตอนและนิวตรอน","โฟตอน","ไอออนลบ"],c:1,u:5},
+ {q:"การเผากระดาษจนกลายเป็นเถ้า เป็นการเปลี่ยนแปลงชนิดใด?",a:["การเปลี่ยนแปลงทางกายภาพ","การเปลี่ยนสถานะ","การเปลี่ยนแปลงทางเคมี","ไม่มีการเปลี่ยนแปลง"],c:2,u:6},
+ {q:"การเกิดสนิมของเหล็กเป็นปฏิกิริยาประเภทใด?",a:["ออกซิเดชัน","การสังเคราะห์แสง","การหมัก","การระเหิด"],c:0,u:7},
+ {q:"การผลิตโยเกิร์ตอาศัยหลักการใด?",a:["การฉายรังสี","การกลั่น","การหมักด้วยจุลินทรีย์","การตกผลึก"],c:2,u:8},
+ {q:"1 นาโนเมตร มีค่าเท่ากับข้อใด?",a:["10⁻³ เมตร","10⁻⁹ เมตร","10³ เมตร","10⁹ เมตร"],c:1,u:9},
+ {q:"ข้อใดแสดงการใช้กระบวนการทางวิทยาศาสตร์ในงานอาชีพได้ดีที่สุด?",a:["เดาคำตอบโดยไม่ตรวจสอบ","ทำตามความเคยชินเท่านั้น","เก็บข้อมูลและวิเคราะห์ก่อนตัดสินใจแก้ปัญหา","หลีกเลี่ยงการบันทึกข้อมูล"],c:2,u:0}
+];
+const KH_SHAPES=["▲","◆","●","■"];
+const KH_TIME=15;
+let khIndex=0,khScore=0,khTimer=null,khAnswered=false,khCorrectCount=0;
+
+function startKahoot(){
+  clearInterval(khTimer);
+  khIndex=0;khScore=0;khAnswered=false;khCorrectCount=0;
+  document.getElementById("khScore").textContent=0;
+  document.getElementById("khNext").style.display="none";
+  renderKahoot();
+}
+function renderKahoot(){
+  clearInterval(khTimer);
+  if(khIndex>=kahootQuestions.length){finishKahoot();return}
+  khAnswered=false;
+  const q=kahootQuestions[khIndex];
+  document.getElementById("khIndex").textContent=khIndex+1;
+  document.getElementById("khTag").textContent="หน่วยที่ "+(q.u||"—")+" · "+UNIT_NAMES[q.u];
+  document.getElementById("khQuestion").textContent=q.q;
+  document.getElementById("khFeedback").textContent="";
+  document.getElementById("khNext").style.display="none";
+  document.getElementById("khOptions").innerHTML=q.a.map((x,i)=>
+    `<button class="kahoot-tile t${i}" onclick="answerKahoot(${i})"><span class="kh-shape">${KH_SHAPES[i]}</span><span>${x}</span></button>`).join("");
+  let t=KH_TIME;
+  document.getElementById("khTime").textContent=t;
+  document.getElementById("khTimerFill").style.width="100%";
+  khTimer=setInterval(()=>{
+    t--;
+    document.getElementById("khTime").textContent=Math.max(t,0);
+    document.getElementById("khTimerFill").style.width=Math.max(t/KH_TIME*100,0)+"%";
+    if(t<=0)answerKahoot(-1);
+  },1000);
+}
+function answerKahoot(index){
+  if(khAnswered)return;
+  khAnswered=true;clearInterval(khTimer);
+  const timeLeftText=document.getElementById("khTime").textContent;
+  const timeLeft=Math.max(parseInt(timeLeftText,10)||0,0);
+  const q=kahootQuestions[khIndex];
+  const tiles=[...document.querySelectorAll(".kahoot-tile")];
+  tiles.forEach((b,i)=>{b.classList.add("disabled");if(i===q.c)b.classList.add("correct")});
+  if(index===q.c){
+    const pts=Math.round(500+500*(timeLeft/KH_TIME));
+    khScore+=pts;khCorrectCount++;
+    document.getElementById("khFeedback").textContent="✅ ถูกต้อง! +"+pts+" คะแนน";
+  }else{
+    if(index>=0)tiles[index].classList.add("wrong");
+    document.getElementById("khFeedback").textContent="ยังไม่ถูก คำตอบที่ถูกคือ "+q.a[q.c];
+  }
+  document.getElementById("khScore").textContent=khScore;
+  document.getElementById("khNext").style.display="inline-block";
+  document.getElementById("khNext").textContent=khIndex===kahootQuestions.length-1?"🏁 ดูผลคะแนน":"ข้อถัดไป →";
+}
+function nextKahoot(){
+  khIndex++;renderKahoot();
+}
+function finishKahoot(){
+  clearInterval(khTimer);
+  const rank=khScore>=8500?"🏆 อันดับ 1 ประจำห้อง":khScore>=6000?"🥈 ทำได้ดีมาก":khScore>=3000?"🥉 พอใช้ได้":"📚 ลองใหม่อีกครั้งนะ";
+  document.getElementById("khTag").textContent="สรุปผล Kahoot";
+  document.getElementById("khQuestion").textContent="จบเกมแล้ว!";
+  document.getElementById("khOptions").innerHTML=`<div class="kahoot-result"><div>คะแนนรวม</div><div class="big">${khScore}</div><div>ตอบถูก ${khCorrectCount}/10 ข้อ</div><div style="margin-top:8px">${rank}</div></div>`;
+  document.getElementById("khFeedback").textContent="กด “เริ่ม Kahoot” เพื่อเล่นอีกครั้ง";
+  document.getElementById("khNext").style.display="none";
+  document.getElementById("khTimerFill").style.width="0%";
+  upsertLeaderboard({kahootScore:khScore,kahootCorrect:khCorrectCount});
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function fmtTime(ts){
+  const d=new Date(ts);
+  return d.toLocaleDateString("th-TH",{day:"2-digit",month:"2-digit"})+" "+d.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"});
+}
+
+/* ---------- LEADERBOARD (Firebase) ---------- */
+function upsertLeaderboard(patch){
+  const name=(localStorage.getItem("studentName")||"").trim();
+  if(!name||!dbReady)return;
+  db.ref("leaderboard/"+lbKey(name)).update(Object.assign({name},patch,{updatedAt:firebase.database.ServerValue.TIMESTAMP}));
+}
+function computeTotal(rec){
+  const afterPart=rec.afterScore!=null?(rec.afterScore/10)*50:0;
+  const khPart=rec.kahootScore!=null?(rec.kahootScore/10000)*50:0;
+  return Math.round(afterPart+khPart);
+}
+let lbListenerAttached=false;
+function renderLeaderboard(){
+  const box=document.getElementById("lbBox");
+  if(!box)return;
+  if(!dbReady){
+    box.innerHTML='<div class="lb-empty">ยังไม่ได้เชื่อมต่อฐานข้อมูลกลาง — ผู้ดูแลเว็บต้องตั้งค่า firebaseConfig ในโค้ดก่อน (ดูคอมเมนต์ในไฟล์)</div>';
+    return;
+  }
+  if(!lbListenerAttached){
+    lbListenerAttached=true;
+    db.ref("leaderboard").on("value",snap=>{
+      const val=snap.val()||{};
+      const list=Object.values(val).map(r=>({...r,total:computeTotal(r)})).sort((a,b)=>b.total-a.total);
+      renderLbTable(list);
+    },err=>{ box.innerHTML='<div class="lb-empty">เชื่อมต่อฐานข้อมูลไม่สำเร็จ: '+escapeHtml(err.message||"")+'</div>'; });
+  }
+}
+function renderLbTable(list){
+  const box=document.getElementById("lbBox");
+  if(!box)return;
+  if(list.length===0){
+    box.innerHTML='<div class="lb-empty">ยังไม่มีข้อมูลคะแนน — ทำแบบทดสอบหลังเรียนหรือเล่น Kahoot เพื่อขึ้นตาราง</div>';
+    return;
+  }
+  const myName=(localStorage.getItem("studentName")||"").trim();
+  const medals=["🥇","🥈","🥉"];
+  box.innerHTML=`<table class="lb-table"><tr><th>อันดับ</th><th>ชื่อ</th><th>หลังเรียน</th><th>Kahoot</th><th>คะแนนรวม</th></tr>`+
+    list.map((r,i)=>`<tr class="${r.name===myName?"me":""}"><td class="rank">${medals[i]||(i+1)}</td><td>${escapeHtml(r.name)}</td><td class="num">${r.afterScore!=null?r.afterScore+"/10":"-"}</td><td class="num">${r.kahootScore!=null?r.kahootScore:"-"}</td><td class="num">${r.total}</td></tr>`).join("")+
+    `</table>`;
+}
+function clearLeaderboard(){
+  if(!dbReady){alert("ยังไม่ได้เชื่อมต่อฐานข้อมูลกลาง");return;}
+  if(confirm("ต้องการล้างตารางคะแนนทั้งหมดหรือไม่? (ใช้สำหรับเริ่มคาบเรียนใหม่)")){
+    db.ref("leaderboard").remove();
+  }
+}
+
+/* ---------- TEACHER COMMENTS (Firebase) ---------- */
+function addTeacherComment(){
+  const student=document.getElementById("tcStudent").value.trim();
+  const text=document.getElementById("tcText").value.trim();
+  if(!student||!text){alert("กรุณากรอกชื่อผู้เรียนและข้อความความเห็น");return;}
+  if(!dbReady){alert("ยังไม่ได้เชื่อมต่อฐานข้อมูลกลาง — ผู้ดูแลเว็บต้องตั้งค่า firebaseConfig ในโค้ดก่อน");return;}
+  db.ref("comments").push({student,text,at:firebase.database.ServerValue.TIMESTAMP});
+  document.getElementById("tcText").value="";
+}
+function deleteComment(key){
+  if(!dbReady)return;
+  db.ref("comments/"+key).remove();
+}
+let tcListenerAttached=false;
+function renderComments(){
+  const allBox=document.getElementById("tcAllList");
+  if(!allBox)return;
+  if(!dbReady){
+    allBox.innerHTML='<div class="tc-empty">ยังไม่ได้เชื่อมต่อฐานข้อมูลกลาง — ผู้ดูแลเว็บต้องตั้งค่า firebaseConfig ในโค้ดก่อน (ดูคอมเมนต์ในไฟล์)</div>';
+    document.getElementById("tcMineBox").style.display="none";
+    return;
+  }
+  if(!tcListenerAttached){
+    tcListenerAttached=true;
+    db.ref("comments").on("value",snap=>{
+      const val=snap.val()||{};
+      const list=Object.entries(val).map(([key,c])=>({...c,key}));
+      renderCommentLists(list);
+    },err=>{ allBox.innerHTML='<div class="tc-empty">เชื่อมต่อฐานข้อมูลไม่สำเร็จ: '+escapeHtml(err.message||"")+'</div>'; });
+  }
+}
+function renderCommentLists(list){
+  const allBox=document.getElementById("tcAllList");
+  const mineBox=document.getElementById("tcMineBox");
+  const mineList=document.getElementById("tcMineList");
+  if(!allBox)return;
+  const sorted=[...list].sort((a,b)=>(b.at||0)-(a.at||0));
+  const myName=(localStorage.getItem("studentName")||"").trim();
+  if(sorted.length===0){
+    allBox.innerHTML='<div class="tc-empty">ยังไม่มีความเห็นจากคุณครู</div>';
+  }else{
+    allBox.innerHTML=sorted.map(c=>`<div class="tc-item"><div class="tc-head"><span class="tc-name">${escapeHtml(c.student||"")}</span><span class="tc-time">${c.at?fmtTime(c.at):""}</span></div><div class="tc-text">${escapeHtml(c.text||"")}</div><button class="tc-del" onclick="deleteComment('${c.key}')">ลบ</button></div>`).join("");
+  }
+  const mine=sorted.filter(c=>(c.student||"").trim()===myName&&myName!=="");
+  if(mine.length>0){
+    mineBox.style.display="block";
+    mineList.innerHTML=mine.map(c=>`<div class="tc-item"><div class="tc-head"><span class="tc-time">${c.at?fmtTime(c.at):""}</span></div><div class="tc-text">${escapeHtml(c.text||"")}</div></div>`).join("");
+  }else{
+    mineBox.style.display="none";
+  }
+}
+function updateDevelopment(){
+  const b=localStorage.getItem("beforeScore"),a=localStorage.getItem("afterScore");
+  document.getElementById("beforeScore").textContent=b===null?"-":b+"/10";
+  document.getElementById("afterScore").textContent=a===null?"-":a+"/10";
+  document.getElementById("beforeQuality").textContent=b===null?"ยังไม่มีข้อมูล":quality(+b);
+  document.getElementById("afterQuality").textContent=a===null?"ยังไม่มีข้อมูล":quality(+a);
+  if(b!==null&&a!==null){
+    const d=+a-+b;
+    document.getElementById("improvementValue").textContent=(d>=0?"+":"")+d+" คะแนน";
+    document.getElementById("improvementText").textContent=d>0?"🎉 คะแนนหลังเรียนเพิ่มขึ้น แสดงถึงพัฒนาการของผู้เรียน":d===0?"🙂 คะแนนเท่าเดิม ควรทบทวนเนื้อหาเพิ่มเติม":"📖 คะแนนหลังเรียนลดลง ควรทบทวนเนื้อหาและลองทำกิจกรรมอีกครั้ง";
+  }
+}
+window.addEventListener("load",()=>{
+  const n=localStorage.getItem("studentName");
+  if(n)showMain();
+});
+</script>
+
+<script id="pretest-lock-js">
+function hasCompletedPretest(){
+  const s = localStorage.getItem('beforeScore');
+  return s !== null && s !== '' && !Number.isNaN(Number(s));
+}
+function updateNavLock(){
+  const locked = !hasCompletedPretest();
+  ['navKnowledge','navAfter','navGame','navKahoot','navLeaderboard','navTeacher','navDevelopment'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(!b)return;
+    b.classList.toggle('locked', locked);
+    b.setAttribute('aria-disabled', locked ? 'true' : 'false');
+    b.title = locked ? 'ต้องทำแบบทดสอบก่อนเรียนให้เสร็จก่อน' : '';
+  });
+}
+document.addEventListener('DOMContentLoaded', updateNavLock);
+</script>
+
+</body>
+</html>
